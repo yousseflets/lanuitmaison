@@ -173,6 +173,13 @@ export class FirebaseDataService {
   }
 
   async signOut(): Promise<void> {
+    this.currentUser.set(null);
+    this.products.set([]);
+    this.sales.set([]);
+    this.orders.set([]);
+    this.shopeeProducts.set([]);
+    this.shopeeSales.set([]);
+
     if (this.auth) {
       try {
         await signOut(this.auth);

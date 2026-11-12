@@ -3,6 +3,7 @@ import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Product, Sale } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail, hasStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -73,7 +74,7 @@ export class DashboardPageComponent implements OnInit {
 
   readonly tableProducts = signal<Product[]>([]);
   readonly tableSales = signal<Sale[]>([]);
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
 
   readonly currencyFormatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -95,9 +96,7 @@ export class DashboardPageComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    const userEmail = localStorage.getItem('lanuitmaison_user');
-
-    if (!userEmail) {
+    if (!hasStoredUserEmail()) {
       this.router.navigate(['/login']);
       return;
     }
@@ -187,7 +186,7 @@ export class DashboardPageComponent implements OnInit {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;

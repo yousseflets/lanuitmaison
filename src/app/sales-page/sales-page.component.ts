@@ -3,6 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Product, Sale } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-sales-page',
@@ -14,7 +15,7 @@ import { FirebaseDataService, Product, Sale } from '../services/firebase-data.se
 export class SalesPageComponent {
   readonly products = signal<Product[]>([]);
   readonly sales = signal<Sale[]>([]);
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
 
   readonly totalRevenue = computed(() =>
     this.sales().reduce((total, sale) => total + sale.quantity * sale.unitPrice, 0),
@@ -74,7 +75,7 @@ export class SalesPageComponent {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;

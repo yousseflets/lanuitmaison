@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Product } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-inventory-page',
@@ -12,7 +13,7 @@ import { FirebaseDataService, Product } from '../services/firebase-data.service'
 })
 export class InventoryPageComponent {
   readonly products = signal<Product[]>([]);
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
 
   readonly totalStock = computed(() =>
     this.products().reduce((total, product) => total + product.stock, 0),
@@ -37,7 +38,7 @@ export class InventoryPageComponent {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;

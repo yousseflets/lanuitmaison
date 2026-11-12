@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FirebaseDataService } from '../services/firebase-data.service';
+import { setStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-login-page',
@@ -45,7 +46,7 @@ export class LoginPageComponent {
 
     try {
       await this.data.signIn(email, password);
-      localStorage.setItem('lanuitmaison_user', email);
+      setStoredUserEmail(email);
 
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       const destination = returnUrl?.startsWith('/') && !returnUrl.startsWith('//')

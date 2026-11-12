@@ -3,6 +3,7 @@ import { Component, computed, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Order } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-orders-page',
@@ -13,7 +14,7 @@ import { FirebaseDataService, Order } from '../services/firebase-data.service';
 })
 export class OrdersPageComponent {
   readonly orders: Signal<Order[]>;
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
   readonly pendingCount = computed(() => this.orders().filter((order) => !order.delivered).length);
   readonly deliveredCount = computed(() => this.orders().filter((order) => order.delivered).length);
   readonly today = this.toDateInputValue(new Date());
@@ -64,7 +65,7 @@ export class OrdersPageComponent {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;

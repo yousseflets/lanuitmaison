@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, Signal, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Order } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 interface CalendarDay {
   dateKey: string;
@@ -20,7 +21,7 @@ interface CalendarDay {
 })
 export class AgendaPageComponent {
   readonly orders: Signal<Order[]>;
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
   readonly today = this.toDateInputValue(new Date());
   readonly displayedMonth = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   readonly selectedDate = signal(this.today);
@@ -97,7 +98,7 @@ export class AgendaPageComponent {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;

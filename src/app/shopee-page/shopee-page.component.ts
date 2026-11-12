@@ -3,6 +3,7 @@ import { Component, computed, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, ShopeeProduct, ShopeeSale } from '../services/firebase-data.service';
+import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 @Component({
   selector: 'app-shopee-page',
@@ -14,7 +15,7 @@ import { FirebaseDataService, ShopeeProduct, ShopeeSale } from '../services/fire
 export class ShopeePageComponent {
   readonly products: Signal<ShopeeProduct[]>;
   readonly sales: Signal<ShopeeSale[]>;
-  readonly userEmail = localStorage.getItem('lanuitmaison_user') || 'Administrador';
+  readonly userEmail = getStoredUserEmail();
 
   readonly totalQuantity = computed(() =>
     this.sales().reduce((total, sale) => total + sale.quantity, 0),
@@ -102,7 +103,7 @@ export class ShopeePageComponent {
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
-      localStorage.removeItem('lanuitmaison_user');
+      clearStoredUserEmail();
       await this.router.navigate(['/login']);
     } catch {
       return;
