@@ -1,0 +1,34 @@
+<main class="auth-shell">
+  <section class="auth-card">
+    <div class="brand-block">
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <p class="brand-caption">Gestão Premium de Produtos</p>
+    </div>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <div class="form-header">
+        <span class="eyebrow">Acesso</span>
+        <h1>Entrar</h1>
+      </div>
+
+      <label>
+        <span>E-mail</span>
+        <input type="email" name="email" [(ngModel)]="loginForm.email" placeholder="seu@email.com" autocomplete="username" required />
+      </label>
+
+      <label>
+        <span>Senha</span>
+        <input type="password" name="password" [(ngModel)]="loginForm.password" placeholder="Sua senha" autocomplete="current-password" required />
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting || !data.isFirebaseConfigured()">
+        {{ isSubmitting ? 'Entrando...' : 'Entrar' }}
+      </button>
+
+      <p class="helper-text" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <p class="demo-text" *ngIf="!data.isFirebaseConfigured()">
+        Configure o Firebase no projeto e cadastre seu usuário em Authentication para acessar.
+      </p>
+    </form>
+  </section>
+</main>

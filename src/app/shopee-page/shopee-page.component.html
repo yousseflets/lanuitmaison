@@ -1,0 +1,155 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee" aria-current="page">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <span class="user-email">{{ userEmail }}</span>
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Controle exclusivo do marketplace</p>
+        <h1>Vendas Shopee</h1>
+      </div>
+      <div class="summary-pill">{{ sales().length }} registros</div>
+    </header>
+
+    <section class="stats-grid" aria-label="Resumo das vendas Shopee">
+      <article class="stat-card">
+        <span>Quantidade vendida</span>
+        <strong>{{ totalQuantity() }}</strong>
+        <small>unidades na Shopee</small>
+      </article>
+      <article class="stat-card">
+        <span>Lucro total</span>
+        <strong>{{ currencyFormatter.format(totalProfit()) }}</strong>
+        <small>já descontados custo e taxa</small>
+      </article>
+      <article class="stat-card">
+        <span>Faturamento</span>
+        <strong>{{ currencyFormatter.format(totalRevenue()) }}</strong>
+        <small>vendas registradas na Shopee</small>
+      </article>
+    </section>
+
+    <section class="forms-grid">
+      <article class="panel">
+        <h2>Cadastrar produto Shopee</h2>
+        <form class="form-grid" (ngSubmit)="addProduct()">
+          <label class="full-width">
+            <span>Nome do produto *</span>
+            <input type="text" [(ngModel)]="productForm.name" name="shopee-product-name" required />
+          </label>
+          <label>
+            <span>Preço de venda (R$) *</span>
+            <input type="number" min="0.01" step="0.01" [(ngModel)]="productForm.price" name="shopee-product-price" required />
+          </label>
+          <label>
+            <span>Custo do produto (R$) *</span>
+            <input type="number" min="0" step="0.01" [(ngModel)]="productForm.costPrice" name="shopee-product-cost" required />
+          </label>
+          <label class="full-width">
+            <span>Taxa Shopee (R$ por unidade) *</span>
+            <input type="number" min="0" step="0.01" [(ngModel)]="productForm.fee" name="shopee-product-fee" required />
+          </label>
+          <p class="form-hint full-width">O lucro por unidade será calculado como preço − custo − taxa.</p>
+          <button type="submit" class="full-width">Salvar produto</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h2>Registrar venda Shopee</h2>
+        <form class="form-grid" (ngSubmit)="addSale()">
+          <label class="full-width">
+            <span>Produto *</span>
+            <select [(ngModel)]="saleForm.productId" name="shopee-sale-product" required>
+              <option value="">Selecione um produto</option>
+              <option *ngFor="let product of products()" [value]="product.id">{{ product.name }}</option>
+            </select>
+          </label>
+          <label class="full-width">
+            <span>Quantidade vendida *</span>
+            <input type="number" min="1" step="1" [(ngModel)]="saleForm.quantity" name="shopee-sale-quantity" required />
+          </label>
+          <div class="sale-preview full-width" *ngIf="getSelectedProduct() as product">
+            <span>Preço {{ currencyFormatter.format(product.price) }}</span>
+            <span>Custo {{ currencyFormatter.format(product.costPrice) }}</span>
+            <span>Taxa {{ currencyFormatter.format(product.fee) }}</span>
+            <strong>Lucro por unidade {{ currencyFormatter.format(product.price - product.costPrice - product.fee) }}</strong>
+          </div>
+          <button type="submit" class="full-width" [disabled]="!products().length">Registrar venda</button>
+          <p class="form-hint full-width" *ngIf="!products().length">Cadastre um produto antes de registrar uma venda.</p>
+        </form>
+      </article>
+    </section>
+
+    <section class="panel products-panel">
+      <div class="panel-heading">
+        <h2>Produtos e resultados Shopee</h2>
+        <span>{{ products().length }} produtos</span>
+      </div>
+      <div class="table-wrap" *ngIf="productSummaries().length; else emptyProducts">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Preço</th>
+              <th>Custo</th>
+              <th>Taxa</th>
+              <th>Qtd. vendida</th>
+              <th>Lucro Shopee</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of productSummaries()">
+              <td>{{ product.name }}</td>
+              <td>{{ currencyFormatter.format(product.price) }}</td>
+              <td>{{ currencyFormatter.format(product.costPrice) }}</td>
+              <td>{{ currencyFormatter.format(product.fee) }}</td>
+              <td>{{ product.quantitySold }}</td>
+              <td class="profit-cell">{{ currencyFormatter.format(product.profit) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #emptyProducts>
+        <p class="empty-state">Nenhum produto cadastrado para a Shopee ainda.</p>
+      </ng-template>
+    </section>
+
+    <section class="panel sales-panel">
+      <div class="panel-heading">
+        <h2>Vendas Shopee recentes</h2>
+        <span>{{ totalQuantity() }} unidades vendidas</span>
+      </div>
+      <div class="sale-list" *ngIf="sales().length; else emptySales">
+        <article class="sale-row" *ngFor="let sale of sales().slice().reverse()">
+          <div>
+            <strong>{{ sale.productName }}</strong>
+            <span>{{ sale.quantity }} un. · {{ sale.date | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="sale-values">
+            <b>{{ currencyFormatter.format(sale.unitPrice * sale.quantity) }}</b>
+            <small>Lucro {{ currencyFormatter.format(sale.profit) }}</small>
+          </div>
+        </article>
+      </div>
+      <ng-template #emptySales>
+        <p class="empty-state">Nenhuma venda Shopee registrada.</p>
+      </ng-template>
+    </section>
+  </main>
+</div>

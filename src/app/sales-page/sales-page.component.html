@@ -1,0 +1,97 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Vendas</p>
+        <h1>Registro de vendas</h1>
+      </div>
+      <div class="summary-pill">{{ sales().length }} registros</div>
+    </header>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span>Receita</span>
+        <strong>{{ currencyFormatter.format(totalRevenue()) }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Lucro</span>
+        <strong>{{ currencyFormatter.format(totalProfit()) }}</strong>
+      </article>
+    </div>
+
+    <div class="content-grid">
+      <article class="panel form-panel">
+        <h2>Nova venda</h2>
+        <form class="mini-form" (ngSubmit)="addSale()">
+          <label>
+            <span>Produto</span>
+            <select [(ngModel)]="saleForm.productId" name="sale-product" (change)="onProductSelected()">
+              <option value="">Selecione</option>
+              <option *ngFor="let product of products()" [value]="product.id">{{ product.name }}</option>
+            </select>
+          </label>
+
+          <div class="two-columns">
+            <label>
+              <span>Quantidade</span>
+              <input type="number" min="1" [(ngModel)]="saleForm.quantity" name="sale-quantity" />
+            </label>
+            <label>
+              <span>Preço unitário</span>
+              <div class="currency-input">
+                <span class="currency-prefix">R$</span>
+                <input
+                  type="text"
+                  [ngModel]="unitPriceInputValue"
+                  (ngModelChange)="unitPriceInputChanged($event)"
+                  name="sale-price"
+                />
+              </div>
+            </label>
+          </div>
+
+          <button type="submit">Salvar venda</button>
+        </form>
+      </article>
+
+      <article class="panel list-panel">
+        <h2>Últimas vendas</h2>
+        <div class="sales-list" *ngIf="sales().length; else emptySales">
+          <div class="sale-row" *ngFor="let sale of sales()">
+            <div>
+              <strong>{{ sale.productName }}</strong>
+              <span>{{ sale.quantity }} unidades</span>
+            </div>
+            <div class="sale-meta">
+              <b>{{ currencyFormatter.format(sale.unitPrice * sale.quantity) }}</b>
+              <small>{{ currencyFormatter.format(sale.profit) }} lucro</small>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptySales>
+          <p class="empty-state">Nenhuma venda registrada.</p>
+        </ng-template>
+      </article>
+    </div>
+  </main>
+</div>

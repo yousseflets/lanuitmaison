@@ -1,0 +1,176 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+
+    <button class="logout-button" type="button" (click)="logout()">Sair</button>
+  </aside>
+
+  <main class="content" id="dashboard">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Painel geral</p>
+        <h1>La Nuit</h1>
+      </div>
+      <div class="user-pill">{{ userEmail }}</div>
+    </header>
+
+    <section class="stats-grid">
+      <article class="stat-card" *ngFor="let stat of stats()" [ngClass]="stat.tone">
+        <span>{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+        <small>{{ stat.subtitle }}</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel" id="products">
+        <div class="panel-header">
+          <h2>Cadastrar produto</h2>
+        </div>
+
+        <form class="mini-form" (ngSubmit)="addProduct()">
+          <div class="field-group">
+            <label>
+              <span>Nome</span>
+              <input type="text" [(ngModel)]="newProductForm.name" name="product-name" />
+            </label>
+          </div>
+
+          <div class="field-group two-columns">
+            <label>
+              <span>Categoria</span>
+              <input type="text" [(ngModel)]="newProductForm.category" name="product-category" />
+            </label>
+            <label>
+              <span>Estoque</span>
+              <input type="number" min="0" [(ngModel)]="newProductForm.stock" name="product-stock" />
+            </label>
+          </div>
+
+          <div class="field-group two-columns">
+            <label>
+              <span>Preço venda</span>
+              <input type="number" step="0.01" min="0" [(ngModel)]="newProductForm.price" name="product-price" />
+            </label>
+            <label>
+              <span>Custo</span>
+              <input type="number" step="0.01" min="0" [(ngModel)]="newProductForm.costPrice" name="product-cost" />
+            </label>
+          </div>
+
+          <button type="submit">Salvar produto</button>
+        </form>
+      </article>
+
+      <article class="panel" id="inventory">
+        <div class="panel-header">
+          <h2>Estoque</h2>
+        </div>
+
+        <ul class="inventory-list">
+          <li *ngFor="let product of products()">
+            <div>
+              <strong>{{ product.name }}</strong>
+              <span>{{ product.category }}</span>
+            </div>
+            <div class="inventory-meta">
+              <span>{{ product.stock }} un.</span>
+              <small [class.warning]="product.stock <= 5">{{ product.stock <= 5 ? 'Baixo estoque' : 'Normal' }}</small>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel" id="sales">
+        <div class="panel-header">
+          <h2>Registrar venda</h2>
+        </div>
+
+        <form class="mini-form" (ngSubmit)="addSale()">
+          <div class="field-group">
+            <label>
+              <span>Produto</span>
+              <select [(ngModel)]="saleForm.productId" name="sale-product">
+                <option value="">Selecione</option>
+                <option *ngFor="let product of products()" [value]="product.id">{{ product.name }}</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="field-group two-columns">
+            <label>
+              <span>Quantidade</span>
+              <input type="number" min="1" [(ngModel)]="saleForm.quantity" name="sale-quantity" />
+            </label>
+            <label>
+              <span>Preço unitário</span>
+              <input type="number" step="0.01" min="0" [(ngModel)]="saleForm.unitPrice" name="sale-price" />
+            </label>
+          </div>
+
+          <button type="submit">Salvar venda</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Produtos mais vendidos</h2>
+        </div>
+
+        <ul class="list-compact">
+          <li *ngFor="let product of topSellingProducts()">
+            <span>{{ product.name }}</span>
+            <strong>{{ product.quantity }} un.</strong>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Alertas de estoque</h2>
+        </div>
+
+        <ul class="list-compact">
+          <li *ngFor="let product of lowStockProducts()">
+            <span>{{ product.name }}</span>
+            <strong>{{ product.stock }} un.</strong>
+          </li>
+          <li *ngIf="lowStockProducts().length === 0">
+            <span>Sem alertas</span>
+            <strong>OK</strong>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Resumo financeiro</h2>
+        </div>
+
+        <div class="finance-summary">
+          <div>
+            <span>Receita</span>
+            <strong>{{ currencyFormatter.format(revenue()) }}</strong>
+          </div>
+          <div>
+            <span>Lucro</span>
+            <strong>{{ currencyFormatter.format(sales().reduce((total, sale) => total + sale.profit, 0)) }}</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,101 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda" aria-current="page">Agenda</a>
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <span class="user-email">{{ userEmail }}</span>
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Organize as próximas entregas</p>
+        <h1>Agenda</h1>
+      </div>
+      <div class="summary-pill">{{ pendingCount() }} entregas pendentes</div>
+    </header>
+
+    <div class="agenda-layout">
+      <section class="panel calendar-panel" aria-label="Calendário de entregas">
+        <div class="calendar-heading">
+          <button type="button" class="month-button" aria-label="Mês anterior" (click)="previousMonth()">‹</button>
+          <h2>{{ monthLabel() }}</h2>
+          <button type="button" class="month-button" aria-label="Próximo mês" (click)="nextMonth()">›</button>
+        </div>
+        <div class="calendar-grid">
+          <span class="weekday" *ngFor="let weekday of weekdays">{{ weekday }}</span>
+          <button
+            type="button"
+            class="calendar-day"
+            *ngFor="let day of calendarDays()"
+            [class.outside-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            [class.selected]="selectedDate() === day.dateKey"
+            [attr.aria-label]="day.dateKey + (day.orderCount ? ', ' + day.orderCount + ' entregas pendentes' : '')"
+            [attr.aria-pressed]="selectedDate() === day.dateKey"
+            (click)="selectDate(day.dateKey)"
+          >
+            <span>{{ day.dayNumber }}</span>
+            <i *ngIf="day.orderCount" class="delivery-dot" [attr.aria-label]="day.orderCount + ' entregas'"></i>
+          </button>
+        </div>
+        <p class="calendar-hint"><i class="delivery-dot"></i> Dia com entregas pendentes</p>
+      </section>
+
+      <section class="panel delivery-panel">
+        <div class="delivery-heading">
+          <div>
+            <p class="eyebrow">Entregas do dia</p>
+            <h2>{{ formatSelectedDate() }}</h2>
+          </div>
+          <a routerLink="/orders">+ Nova encomenda</a>
+        </div>
+
+        <div class="delivery-list" *ngIf="selectedOrders().length; else emptyDay">
+          <article class="delivery-card" *ngFor="let order of selectedOrders()" [class.is-delivered]="order.delivered">
+            <div class="delivery-card-top">
+              <div>
+                <h3>{{ order.customerName }}</h3>
+                <p>{{ order.description }}</p>
+              </div>
+              <span class="status" [class.delivered]="order.delivered">
+                {{ order.delivered ? 'Entregue' : 'Pendente' }}
+              </span>
+            </div>
+            <div class="delivery-meta">
+              <span *ngIf="order.phone">{{ order.phone }}</span>
+              <span *ngIf="order.notes">{{ order.notes }}</span>
+            </div>
+            <button
+              *ngIf="!order.delivered"
+              type="button"
+              class="deliver-button"
+              (click)="markDelivered(order)"
+            >
+              Marcar como entregue
+            </button>
+          </article>
+        </div>
+        <ng-template #emptyDay>
+          <div class="empty-state">
+            <span class="empty-icon">✦</span>
+            <p>Nenhuma entrega prevista para este dia.</p>
+            <a routerLink="/orders">Cadastrar encomenda</a>
+          </div>
+        </ng-template>
+      </section>
+    </div>
+  </main>
+</div>

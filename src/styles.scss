@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-page: #f5efe6;
+  --bg-deep: #efe3d2;
+  --bg-panel: #fffdf9;
+  --bg-panel-strong: #efe3d2;
+  --gold-strong: #d8b572;
+  --gold-soft: #c59b61;
+  --gold-deep: #875f2c;
+  --text-primary: #1a1713;
+  --text-secondary: #584e45;
+  --text-muted: #7d6b5b;
+  --line: rgba(135, 95, 44, 0.3);
+  --line-soft: rgba(135, 95, 44, 0.18);
+  --shadow-soft: rgba(67, 48, 30, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Cinzel', 'Georgia', 'Times New Roman', serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, rgba(216, 181, 114, 0.12), transparent 28%), var(--bg-page);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}

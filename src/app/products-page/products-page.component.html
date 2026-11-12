@@ -1,0 +1,121 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Produtos</p>
+        <h1>Catálogo</h1>
+      </div>
+      <div class="summary-pill">{{ products().length }} itens</div>
+    </header>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span>Produtos</span>
+        <strong>{{ products().length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Valor em estoque</span>
+        <strong>{{ currencyFormatter.format(totalValue()) }}</strong>
+      </article>
+    </div>
+
+    <article class="panel list-panel">
+      <div class="panel-header">
+        <h2>Produtos cadastrados</h2>
+        <button type="button" class="new-product-button" (click)="openCreateModal()">Cadastrar</button>
+      </div>
+
+      <div class="product-list" *ngIf="products().length; else emptyProducts">
+        <div class="product-row" *ngFor="let product of products()">
+          <div class="product-info">
+            <strong class="product-name">{{ product.name }}</strong>
+            <span class="product-category">{{ product.category }}</span>
+            <small class="product-status" [class.inactive]="product.active === false">
+              {{ product.active === false ? 'Inativo' : 'Ativo' }}
+            </small>
+          </div>
+
+          <div class="product-meta">
+            <b>{{ product.stock }} un.</b>
+            <small>{{ currencyFormatter.format(product.price) }}</small>
+          </div>
+
+          <div class="action-group">
+            <button type="button" class="action-button secondary" (click)="editProduct(product)">Editar</button>
+            <button type="button" class="action-button" (click)="toggleProductStatus(product.id)">
+              {{ product.active === false ? 'Ativar' : 'Desativar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyProducts>
+        <p class="empty-state">Nenhum produto cadastrado.</p>
+      </ng-template>
+    </article>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingProductId ? 'Editar produto' : 'Cadastrar produto' }}</h2>
+      <button type="button" class="close-button" (click)="closeModal()">×</button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="addProduct()">
+      <label>
+        <span>Nome</span>
+        <input type="text" [(ngModel)]="newProductForm.name" name="product-name" />
+      </label>
+
+      <label>
+        <span>Categoria</span>
+        <input type="text" [(ngModel)]="newProductForm.category" name="product-category" />
+      </label>
+
+      <div class="two-columns">
+        <label>
+          <span>Preço</span>
+          <input type="number" step="0.01" min="0" [(ngModel)]="newProductForm.price" name="product-price" />
+        </label>
+
+        <label>
+          <span>Custo</span>
+          <input type="number" step="0.01" min="0" [(ngModel)]="newProductForm.costPrice" name="product-cost" />
+        </label>
+      </div>
+
+      <label>
+        <span>Estoque</span>
+        <input type="number" min="0" [(ngModel)]="newProductForm.stock" name="product-stock" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="action-button secondary modal-cancel" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="action-button modal-submit">
+          {{ editingProductId ? 'Salvar alterações' : 'Salvar produto' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

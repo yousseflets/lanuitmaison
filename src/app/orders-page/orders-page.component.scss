@@ -1,0 +1,109 @@
+:host { display: block; }
+
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.sidebar {
+  padding: 28px 20px;
+  border-right: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, #f7f0e7 0%, #f1e6d7 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.brand-logo { display: block; width: 100%; max-width: 160px; margin: 0 auto 24px; }
+.menu { display: flex; flex-direction: column; gap: 8px; }
+.menu a {
+  color: var(--gold-soft);
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+.menu a:hover, .menu a[aria-current='page'] { background: rgba(215, 183, 121, 0.18); color: var(--gold-deep); }
+.sidebar-footer { display: grid; gap: 10px; }
+.user-email { color: var(--text-muted); font-size: 0.78rem; text-align: center; overflow-wrap: anywhere; }
+.logout-button {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.content { padding: 32px; }
+.page-header, .panel-heading, .order-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.eyebrow { margin: 0; color: var(--gold-deep); font-size: 0.72rem; letter-spacing: 0.12rem; text-transform: uppercase; }
+.page-header h1 { margin: 8px 0 0; font-size: clamp(2rem, 3vw, 2.8rem); }
+.agenda-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: var(--bg-panel);
+}
+
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 18px; margin: 24px 0; }
+.stat-card, .panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 12px 28px var(--shadow-soft);
+}
+.stat-card { display: flex; flex-direction: column; gap: 10px; }
+.stat-card span { color: var(--text-secondary); }
+.stat-card strong { font-size: 2rem; }
+.content-grid { display: grid; grid-template-columns: minmax(280px, 0.8fr) minmax(320px, 1.2fr); gap: 22px; align-items: start; }
+.panel h2 { margin: 0; color: var(--text-primary); }
+.order-form { display: grid; gap: 16px; margin-top: 20px; }
+.order-form label { display: grid; gap: 8px; color: var(--text-secondary); font-weight: 600; }
+.order-form input, .order-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--text-primary);
+  padding: 12px;
+}
+.order-form input { min-height: 44px; }
+.order-form textarea { resize: vertical; }
+.order-form button, .deliver-button {
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-strong), var(--gold-soft));
+  color: #101010;
+  font-weight: 700;
+  padding: 14px 18px;
+  cursor: pointer;
+}
+.panel-heading { margin-bottom: 16px; }
+.count-pill { color: var(--text-muted); font-size: 0.85rem; }
+.order-list { display: grid; gap: 12px; }
+.order-card { padding: 16px 0; border-top: 1px solid var(--line-soft); }
+.order-heading { align-items: flex-start; }
+.order-heading h3 { margin: 0 0 6px; font-size: 1.08rem; }
+.order-heading p { margin: 0; color: var(--text-secondary); }
+.status { flex: 0 0 auto; border-radius: 999px; padding: 6px 10px; background: #f5ead6; color: #875f2c; font-size: 0.8rem; }
+.status.delivered { background: #e6efe4; color: #476943; }
+.order-details { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; color: var(--text-muted); font-size: 0.86rem; }
+.empty-state { margin: 0; color: var(--text-muted); line-height: 1.6; }
+
+@media (max-width: 980px) {
+  .page-shell { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--line-soft); }
+}
+@media (max-width: 760px) {
+  .content { padding: 20px 16px; }
+  .content-grid, .stats-grid { grid-template-columns: 1fr; }
+  .page-header, .panel-heading { align-items: flex-start; flex-direction: column; }
+  .agenda-link { width: 100%; text-align: center; }
+}

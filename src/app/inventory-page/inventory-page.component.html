@@ -1,0 +1,66 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Estoque</p>
+        <h1>Controle de estoque</h1>
+      </div>
+      <div class="summary-pill">{{ totalStock() }} itens</div>
+    </header>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span>Itens em estoque</span>
+        <strong>{{ totalStock() }}</strong>
+      </article>
+      <article class="stat-card warning-card">
+        <span>Produtos em alerta</span>
+        <strong>{{ lowStockProducts().length }}</strong>
+      </article>
+    </div>
+
+    <article class="panel">
+      <h2>Resumo do estoque</h2>
+      <div class="inventory-list" *ngIf="products().length; else emptyInventory">
+        <div class="inventory-row" *ngFor="let product of products()">
+          <div>
+            <strong>{{ product.name }}</strong>
+            <span>{{ product.category }}</span>
+          </div>
+          <div class="inventory-meta">
+            <b>{{ product.stock }} un.</b>
+            <small [class.warning]="product.stock <= 5">
+              {{ product.stock <= 5 ? 'Baixo estoque' : 'Em estoque' }}
+            </small>
+          </div>
+          <div class="value-box">
+            {{ currencyFormatter.format(product.price * product.stock) }}
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyInventory>
+        <p class="empty-state">Nenhum item em estoque.</p>
+      </ng-template>
+    </article>
+  </main>
+</div>

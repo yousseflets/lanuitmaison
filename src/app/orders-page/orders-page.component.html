@@ -1,0 +1,98 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/products">Produtos</a>
+        <a routerLink="/inventory">Estoque</a>
+        <a routerLink="/sales">Vendas</a>
+        <a routerLink="/shopee">Shopee</a>
+        <a routerLink="/orders" aria-current="page">Encomendas</a>
+        <a routerLink="/agenda">Agenda</a>
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <span class="user-email">{{ userEmail }}</span>
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Pedidos personalizados</p>
+        <h1>Encomendas</h1>
+      </div>
+      <a class="agenda-link" routerLink="/agenda">Abrir agenda de entregas</a>
+    </header>
+
+    <section class="stats-grid" aria-label="Resumo das encomendas">
+      <article class="stat-card">
+        <span>Aguardando entrega</span>
+        <strong>{{ pendingCount() }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Entregues</span>
+        <strong>{{ deliveredCount() }}</strong>
+      </article>
+    </section>
+
+    <div class="content-grid">
+      <article class="panel form-panel">
+        <h2>Nova encomenda</h2>
+        <form class="order-form" (ngSubmit)="addOrder()">
+          <label>
+            <span>Nome do cliente *</span>
+            <input type="text" [(ngModel)]="orderForm.customerName" name="customer-name" required />
+          </label>
+          <label>
+            <span>Telefone</span>
+            <input type="tel" [(ngModel)]="orderForm.phone" name="customer-phone" autocomplete="tel" />
+          </label>
+          <label>
+            <span>O que foi encomendado? *</span>
+            <textarea [(ngModel)]="orderForm.description" name="order-description" rows="3" required></textarea>
+          </label>
+          <label>
+            <span>Data prevista de entrega *</span>
+            <input type="date" [(ngModel)]="orderForm.deliveryDate" name="delivery-date" required />
+          </label>
+          <label>
+            <span>Observações</span>
+            <textarea [(ngModel)]="orderForm.notes" name="order-notes" rows="2"></textarea>
+          </label>
+          <button type="submit">Salvar encomenda</button>
+        </form>
+      </article>
+
+      <article class="panel list-panel">
+        <div class="panel-heading">
+          <h2>Encomendas cadastradas</h2>
+          <span class="count-pill">{{ orders().length }} no total</span>
+        </div>
+        <div class="order-list" *ngIf="orders().length; else emptyOrders">
+          <article class="order-card" *ngFor="let order of orders()">
+            <div class="order-heading">
+              <div>
+                <h3>{{ order.customerName }}</h3>
+                <p>{{ order.description }}</p>
+              </div>
+              <span class="status" [class.delivered]="order.delivered">
+                {{ order.delivered ? 'Entregue' : 'Pendente' }}
+              </span>
+            </div>
+            <div class="order-details">
+              <span *ngIf="order.phone">Telefone: {{ order.phone }}</span>
+              <span>Entrega: {{ formatDate(order.deliveryDate) }}</span>
+              <span *ngIf="order.notes">Obs.: {{ order.notes }}</span>
+            </div>
+          </article>
+        </div>
+        <ng-template #emptyOrders>
+          <p class="empty-state">Nenhuma encomenda cadastrada. Adicione a primeira pelo formulário.</p>
+        </ng-template>
+      </article>
+    </div>
+  </main>
+</div>

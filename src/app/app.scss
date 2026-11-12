@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+.firebase-error {
+  position: fixed;
+  z-index: 1000;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: min(520px, calc(100vw - 40px));
+  padding: 14px 16px;
+  border: 1px solid #b75a4c;
+  border-radius: 12px;
+  background: #fff4f1;
+  color: #762f24;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  font: 500 0.9rem/1.5 Arial, sans-serif;
+}
+
+.firebase-error button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.4rem;
+  cursor: pointer;
+}

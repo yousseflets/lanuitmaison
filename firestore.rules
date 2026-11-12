@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /products/{documentId} {
+      allow read, write: if signedIn();
+    }
+
+    match /sales/{documentId} {
+      allow read, write: if signedIn();
+    }
+
+    match /orders/{documentId} {
+      allow read, write: if signedIn();
+    }
+
+    match /shopeeProducts/{documentId} {
+      allow read, write: if signedIn();
+    }
+
+    match /shopeeSales/{documentId} {
+      allow read, write: if signedIn();
+    }
+  }
+}
