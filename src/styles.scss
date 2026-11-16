@@ -39,3 +39,49 @@ input,
 select {
   font: inherit;
 }
+
+.menu { display: flex; flex-direction: column; gap: 8px; }
+.menu a {
+  color: var(--gold-soft);
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.menu a:hover,
+.menu a[aria-current='page'],
+.menu-dropdown > summary:hover,
+.menu-dropdown[open] > summary {
+  background: rgba(215, 183, 121, 0.18);
+  color: var(--gold-deep);
+}
+
+.menu-dropdown > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: var(--gold-soft);
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menu-dropdown > summary::-webkit-details-marker { display: none; }
+.menu-dropdown > summary::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background: currentColor;
+  -webkit-mask: var(--menu-icon) center / contain no-repeat;
+  mask: var(--menu-icon) center / contain no-repeat;
+}
+
+.menu-cadastro { --menu-icon: url('/icons/cadastro.svg'); }
+.menu-vendas { --menu-icon: url('/icons/vendas.svg'); }
+.menu-estoque { --menu-icon: url('/icons/estoque.svg'); }
+.menu-materia-prima { --menu-icon: url('/icons/materia-prima.svg'); }
+
+.menu-dropdown > a { display: block; padding-left: 26px; }

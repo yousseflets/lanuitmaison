@@ -3,13 +3,34 @@
     <div>
       <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
       <nav class="menu">
-        <a routerLink="/dashboard">Dashboard</a>
-        <a routerLink="/products">Produtos</a>
-        <a routerLink="/inventory">Estoque</a>
-        <a routerLink="/sales">Vendas</a>
-        <a routerLink="/shopee">Shopee</a>
-        <a routerLink="/orders" aria-current="page">Encomendas</a>
-        <a routerLink="/agenda">Agenda</a>
+        <div class="menu-group">
+          <a routerLink="/dashboard">Dashboard</a>
+        </div>
+        <details class="menu-dropdown menu-cadastro">
+          <summary>Cadastro</summary>
+
+            <a routerLink="/products">Produtos</a>
+            <a routerLink="/orders" aria-current="page">Encomendas</a>
+</details>
+        <details class="menu-dropdown menu-vendas">
+          <summary>Vendas</summary>
+
+            <a routerLink="/sales">Vendas</a>
+            <a routerLink="/shopee">Shopee</a>
+</details>
+        <details class="menu-dropdown menu-estoque">
+          <summary>Estoque</summary>
+
+            <a routerLink="/inventory">Estoque</a>
+</details>
+        <details class="menu-dropdown menu-materia-prima">
+          <summary>Matéria-prima</summary>
+
+            <a routerLink="/materials">Controle de matéria-prima</a>
+</details>
+        <div class="menu-group">
+          <a routerLink="/agenda">Agenda</a>
+        </div>
       </nav>
     </div>
     <div class="sidebar-footer">
@@ -51,8 +72,11 @@
             <input type="tel" [(ngModel)]="orderForm.phone" name="customer-phone" autocomplete="tel" />
           </label>
           <label>
-            <span>O que foi encomendado? *</span>
-            <textarea [(ngModel)]="orderForm.description" name="order-description" rows="3" required></textarea>
+            <span>Produto encomendado *</span>
+            <select [(ngModel)]="orderForm.productId" name="order-product" required>
+              <option value="" disabled>Selecione um produto cadastrado</option>
+              <option *ngFor="let product of products()" [value]="product.id">{{ product.name }}</option>
+            </select>
           </label>
           <label>
             <span>Data prevista de entrega *</span>
@@ -86,6 +110,9 @@
               <span *ngIf="order.phone">Telefone: {{ order.phone }}</span>
               <span>Entrega: {{ formatDate(order.deliveryDate) }}</span>
               <span *ngIf="order.notes">Obs.: {{ order.notes }}</span>
+              <button type="button" class="payment-button" [class.paid]="order.paid" (click)="toggleOrderPaid(order)">
+                {{ order.paid ? 'Pago · marcar como não pago' : 'Não pago · marcar como pago' }}
+              </button>
             </div>
           </article>
         </div>

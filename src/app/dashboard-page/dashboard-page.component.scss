@@ -28,25 +28,6 @@
   filter: drop-shadow(0 0 12px rgba(215, 183, 121, 0.12));
 }
 
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.menu a {
-  color: var(--gold-soft);
-  text-decoration: none;
-  padding: 12px 14px;
-  border-radius: 12px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.menu a:hover {
-  background: rgba(215, 183, 121, 0.12);
-  color: var(--gold-strong);
-}
-
 .logout-button {
   border: 1px solid var(--line);
   background: var(--bg-panel);

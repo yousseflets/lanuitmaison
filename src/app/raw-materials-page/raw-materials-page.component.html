@@ -1,0 +1,189 @@
+<div class="page-shell">
+  <aside class="sidebar">
+    <div>
+      <img class="brand-logo" src="/lanuitlogo.png" alt="La Nuit" />
+      <nav class="menu">
+        <div class="menu-group">
+          <a routerLink="/dashboard">Dashboard</a>
+        </div>
+        <details class="menu-dropdown menu-cadastro">
+          <summary>Cadastro</summary>
+
+            <a routerLink="/products">Produtos</a>
+            <a routerLink="/orders">Encomendas</a>
+</details>
+        <details class="menu-dropdown menu-vendas">
+          <summary>Vendas</summary>
+
+            <a routerLink="/sales">Vendas</a>
+            <a routerLink="/shopee">Shopee</a>
+</details>
+        <details class="menu-dropdown menu-estoque">
+          <summary>Estoque</summary>
+
+            <a routerLink="/inventory">Estoque</a>
+</details>
+        <details class="menu-dropdown menu-materia-prima">
+          <summary>Matéria-prima</summary>
+
+            <a routerLink="/materials">Controle de matéria-prima</a>
+</details>
+        <div class="menu-group">
+          <a routerLink="/agenda">Agenda</a>
+        </div>
+      </nav>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-button" type="button" (click)="logout()">Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Estoque</p>
+        <h1>Matéria-prima</h1>
+      </div>
+      <button type="button" class="primary-button" (click)="openCreateModal()">Cadastrar matéria-prima</button>
+    </header>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span>Matérias-primas</span>
+        <strong>{{ materials().length }}</strong>
+      </article>
+      <article class="stat-card warning-card">
+        <span>Itens abaixo do mínimo</span>
+        <strong>{{ lowStockMaterials().length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Valor em estoque</span>
+        <strong>{{ currencyFormatter.format(totalValue()) }}</strong>
+      </article>
+    </div>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Matérias-primas cadastradas</h2>
+          <p>Controle quantidades, entradas e consumo de materiais.</p>
+        </div>
+      </div>
+
+      <div class="material-list" *ngIf="materials().length; else emptyMaterials">
+        <div class="material-row" *ngFor="let material of materials()">
+          <div class="material-info">
+            <strong>{{ material.name }}</strong>
+            <span>Custo: {{ currencyFormatter.format(material.unitCost) }} / {{ material.unit }}</span>
+          </div>
+          <div class="material-stock">
+            <strong [class.warning]="material.quantity <= material.minimumQuantity">
+              {{ material.quantity }} {{ material.unit }}
+            </strong>
+            <small>Mínimo: {{ material.minimumQuantity }} {{ material.unit }}</small>
+            <small
+              class="stock-status"
+              [class.warning]="material.quantity <= material.minimumQuantity"
+            >
+              {{ material.quantity <= material.minimumQuantity ? 'Reposição necessária' : 'Em estoque' }}
+            </small>
+          </div>
+          <div class="action-group">
+            <button type="button" class="action-button secondary" (click)="openEditModal(material)">Editar</button>
+            <button type="button" class="action-button secondary" (click)="openAdjustmentModal(material, 'entry')">
+              Registrar entrada
+            </button>
+            <button type="button" class="action-button" (click)="openAdjustmentModal(material, 'consumption')">
+              Registrar consumo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyMaterials>
+        <p class="empty-state">Nenhuma matéria-prima cadastrada. Comece pelo botão “Cadastrar matéria-prima”.</p>
+      </ng-template>
+    </article>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingMaterialId ? 'Editar matéria-prima' : 'Cadastrar matéria-prima' }}</h2>
+      <button type="button" class="close-button" aria-label="Fechar" (click)="closeModal()">×</button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="saveMaterial()">
+      <label>
+        <span>Nome</span>
+        <input type="text" [(ngModel)]="materialForm.name" name="material-name" required />
+      </label>
+
+      <div class="two-columns">
+        <label>
+          <span>Unidade de medida</span>
+          <input type="text" placeholder="Ex.: kg, m, un." [(ngModel)]="materialForm.unit" name="material-unit" required />
+        </label>
+        <label>
+          <span>Custo por unidade (R$)</span>
+          <input type="number" step="0.01" min="0" [(ngModel)]="materialForm.unitCost" name="material-cost" />
+        </label>
+      </div>
+
+      <div class="two-columns">
+        <label>
+          <span>Quantidade atual</span>
+          <input type="number" step="0.001" min="0" [(ngModel)]="materialForm.quantity" name="material-quantity" />
+        </label>
+        <label>
+          <span>Quantidade mínima</span>
+          <input
+            type="number"
+            step="0.001"
+            min="0"
+            [(ngModel)]="materialForm.minimumQuantity"
+            name="material-minimum"
+          />
+        </label>
+      </div>
+
+      <p class="form-error" *ngIf="formError">{{ formError }}</p>
+      <div class="modal-actions">
+        <button type="button" class="action-button secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="action-button">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isAdjustmentModalOpen" (click)="closeAdjustmentModal()">
+  <div class="modal-card adjustment-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ adjustmentType === 'entry' ? 'Registrar entrada' : 'Registrar consumo' }}</h2>
+      <button type="button" class="close-button" aria-label="Fechar" (click)="closeAdjustmentModal()">×</button>
+    </div>
+    <p class="adjustment-description">
+      {{ adjustmentMaterial?.name }} — disponível: {{ adjustmentMaterial?.quantity }} {{ adjustmentMaterial?.unit }}
+    </p>
+    <form class="modal-form" (ngSubmit)="saveAdjustment()">
+      <label>
+        <span>Quantidade {{ adjustmentType === 'entry' ? 'recebida' : 'consumida' }}</span>
+        <input
+          type="number"
+          step="0.001"
+          min="0.001"
+          [(ngModel)]="adjustmentQuantity"
+          name="adjustment-quantity"
+          required
+        />
+      </label>
+      <p class="form-error" *ngIf="formError">{{ formError }}</p>
+      <div class="modal-actions">
+        <button type="button" class="action-button secondary" (click)="closeAdjustmentModal()">Cancelar</button>
+        <button type="submit" class="action-button">Confirmar</button>
+      </div>
+    </form>
+  </div>
+</div>

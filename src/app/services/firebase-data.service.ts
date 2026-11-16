@@ -31,6 +31,16 @@ export interface Product {
   createdAt?: string;
 }
 
+export interface RawMaterial {
+  id?: string;
+  name: string;
+  unit: string;
+  quantity: number;
+  minimumQuantity: number;
+  unitCost: number;
+  createdAt?: string;
+}
+
 export interface Sale {
   id?: string;
   productId: string;
@@ -67,9 +77,11 @@ export interface Order {
   customerName: string;
   phone: string;
   description: string;
+  productId?: string;
   deliveryDate: string;
   notes: string;
   delivered: boolean;
+  paid?: boolean;
   createdAt: string;
 }
 
@@ -78,6 +90,7 @@ export interface Order {
 })
 export class FirebaseDataService {
   readonly products = signal<Product[]>([]);
+  readonly rawMaterials = signal<RawMaterial[]>([]);
   readonly sales = signal<Sale[]>([]);
   readonly shopeeProducts = signal<ShopeeProduct[]>([]);
   readonly shopeeSales = signal<ShopeeSale[]>([]);
@@ -175,6 +188,7 @@ export class FirebaseDataService {
   async signOut(): Promise<void> {
     this.currentUser.set(null);
     this.products.set([]);
+    this.rawMaterials.set([]);
     this.sales.set([]);
     this.orders.set([]);
     this.shopeeProducts.set([]);
@@ -201,6 +215,7 @@ export class FirebaseDataService {
 
     try {
       const productsSnapshot = await getDocs(collection(this.db, 'products'));
+      const rawMaterialsSnapshot = await getDocs(collection(this.db, 'rawMaterials'));
       const salesSnapshot = await getDocs(collection(this.db, 'sales'));
       const ordersSnapshot = await getDocs(collection(this.db, 'orders'));
       const shopeeProductsSnapshot = await getDocs(collection(this.db, 'shopeeProducts'));
@@ -209,6 +224,10 @@ export class FirebaseDataService {
       const productList = productsSnapshot.docs.map((snapshot) => ({
         id: snapshot.id,
         ...(snapshot.data() as Omit<Product, 'id'>),
+      }));
+      const rawMaterialList = rawMaterialsSnapshot.docs.map((snapshot) => ({
+        id: snapshot.id,
+        ...(snapshot.data() as Omit<RawMaterial, 'id'>),
       }));
 
       const saleList = salesSnapshot.docs.map((snapshot) => ({
@@ -229,6 +248,7 @@ export class FirebaseDataService {
       }));
 
       this.products.set(productList);
+      this.rawMaterials.set(rawMaterialList);
       this.sales.set(saleList);
       this.orders.set(orderList);
       this.shopeeProducts.set(shopeeProductList);
@@ -266,6 +286,53 @@ export class FirebaseDataService {
     } catch (error) {
       this.reportWriteError('salvar produto', error);
     }
+  }
+
+  async addRawMaterial(material: Omit<RawMaterial, 'id' | 'createdAt'>): Promise<void> {
+    const normalizedMaterial: RawMaterial = {
+      ...material,
+      quantity: Number(material.quantity) || 0,
+      minimumQuantity: Number(material.minimumQuantity) || 0,
+      unitCost: Number(material.unitCost) || 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!this.db) {
+      this.rawMaterials.update((materials) => [
+        ...materials,
+        { ...normalizedMaterial, id: crypto.randomUUID() },
+      ]);
+      return;
+    }
+
+    try {
+      const addedDocument = await addDoc(collection(this.db, 'rawMaterials'), normalizedMaterial);
+      this.rawMaterials.update((materials) => [
+        ...materials,
+        { ...normalizedMaterial, id: addedDocument.id },
+      ]);
+    } catch (error) {
+      this.reportWriteError('salvar matéria-prima', error);
+    }
+  }
+
+  async updateRawMaterial(
+    materialId: string,
+    material: Partial<Omit<RawMaterial, 'id'>>,
+  ): Promise<void> {
+    if (this.db) {
+      try {
+        await updateDoc(doc(this.db, 'rawMaterials', materialId), material);
+      } catch (error) {
+        this.reportWriteError('atualizar matéria-prima', error);
+      }
+    }
+
+    this.rawMaterials.update((materials) =>
+      materials.map((current) =>
+        current.id === materialId ? { ...current, ...material } : current,
+      ),
+    );
   }
 
   async updateProduct(productId: string, product: Partial<Omit<Product, 'id'>>): Promise<void> {
@@ -423,6 +490,7 @@ export class FirebaseDataService {
       description: order.description.trim(),
       notes: order.notes.trim(),
       delivered: false,
+      paid: order.paid ?? false,
       createdAt: new Date().toISOString(),
     };
 
@@ -461,6 +529,28 @@ export class FirebaseDataService {
     );
   }
 
+  async toggleOrderPaid(orderId: string): Promise<void> {
+    const order = this.orders().find((currentOrder) => currentOrder.id === orderId);
+    if (!order) {
+      return;
+    }
+
+    const paid = !(order.paid ?? false);
+    if (this.db) {
+      try {
+        await updateDoc(doc(this.db, 'orders', orderId), { paid });
+      } catch (error) {
+        this.reportWriteError('atualizar pagamento da encomenda', error);
+      }
+    }
+
+    this.orders.update((currentOrders) =>
+      currentOrders.map((currentOrder) =>
+        currentOrder.id === orderId ? { ...currentOrder, paid } : currentOrder,
+      ),
+    );
+  }
+
   private initializeFirebase(): void {
     const firebaseConfig = environment.firebaseConfig;
     const requiredConfigValues = [
@@ -490,6 +580,7 @@ export class FirebaseDataService {
           void this.loadData().catch(() => undefined);
         } else {
           this.products.set([]);
+          this.rawMaterials.set([]);
           this.sales.set([]);
           this.orders.set([]);
           this.shopeeProducts.set([]);

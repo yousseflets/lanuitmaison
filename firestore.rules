@@ -10,6 +10,10 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
 
+    match /rawMaterials/{documentId} {
+      allow read, write: if signedIn();
+    }
+
     match /sales/{documentId} {
       allow read, write: if signedIn();
     }

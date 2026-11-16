@@ -26,24 +26,6 @@
   margin: 0 auto 24px;
 }
 
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.menu a {
-  color: var(--gold-soft);
-  text-decoration: none;
-  padding: 12px 14px;
-  border-radius: 12px;
-}
-
-.menu a:hover {
-  background: rgba(215, 183, 121, 0.12);
-  color: var(--gold-strong);
-}
-
 .sidebar-footer {
   display: flex;
   justify-content: center;

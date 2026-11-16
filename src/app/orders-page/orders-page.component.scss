@@ -18,14 +18,6 @@
 }
 
 .brand-logo { display: block; width: 100%; max-width: 160px; margin: 0 auto 24px; }
-.menu { display: flex; flex-direction: column; gap: 8px; }
-.menu a {
-  color: var(--gold-soft);
-  text-decoration: none;
-  padding: 12px 14px;
-  border-radius: 12px;
-}
-.menu a:hover, .menu a[aria-current='page'] { background: rgba(215, 183, 121, 0.18); color: var(--gold-deep); }
 .sidebar-footer { display: grid; gap: 10px; }
 .user-email { color: var(--text-muted); font-size: 0.78rem; text-align: center; overflow-wrap: anywhere; }
 .logout-button {
@@ -66,7 +58,7 @@
 .panel h2 { margin: 0; color: var(--text-primary); }
 .order-form { display: grid; gap: 16px; margin-top: 20px; }
 .order-form label { display: grid; gap: 8px; color: var(--text-secondary); font-weight: 600; }
-.order-form input, .order-form textarea {
+.order-form input, .order-form textarea, .order-form select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -95,6 +87,8 @@
 .status { flex: 0 0 auto; border-radius: 999px; padding: 6px 10px; background: #f5ead6; color: #875f2c; font-size: 0.8rem; }
 .status.delivered { background: #e6efe4; color: #476943; }
 .order-details { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; color: var(--text-muted); font-size: 0.86rem; }
+.payment-button { border: 0; border-radius: 999px; padding: 6px 10px; background: #f5ead6; color: #875f2c; font: inherit; font-weight: 700; cursor: pointer; }
+.payment-button.paid { background: #e6efe4; color: #476943; }
 .empty-state { margin: 0; color: var(--text-muted); line-height: 1.6; }
 
 @media (max-width: 980px) {

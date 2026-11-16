@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, Signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { FirebaseDataService, Order } from '../services/firebase-data.service';
+import { FirebaseDataService, Order, Product } from '../services/firebase-data.service';
 import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 
 @Component({
@@ -14,6 +14,7 @@ import { clearStoredUserEmail, getStoredUserEmail } from '../session-storage';
 })
 export class OrdersPageComponent {
   readonly orders: Signal<Order[]>;
+  readonly products: Signal<Product[]>;
   readonly userEmail = getStoredUserEmail();
   readonly pendingCount = computed(() => this.orders().filter((order) => !order.delivered).length);
   readonly deliveredCount = computed(() => this.orders().filter((order) => order.delivered).length);
@@ -22,7 +23,7 @@ export class OrdersPageComponent {
   orderForm = {
     customerName: '',
     phone: '',
-    description: '',
+    productId: '',
     deliveryDate: this.today,
     notes: '',
   };
@@ -32,26 +33,47 @@ export class OrdersPageComponent {
     private readonly router: Router,
   ) {
     this.orders = this.data.orders;
+    this.products = this.data.products;
   }
 
   async addOrder(): Promise<void> {
-    const { customerName, phone, description, deliveryDate, notes } = this.orderForm;
-    if (!customerName.trim() || !description.trim() || !deliveryDate) {
+    const { customerName, phone, productId, deliveryDate, notes } = this.orderForm;
+    const product = this.products().find((item) => item.id === productId);
+    if (!customerName.trim() || !product?.id || !deliveryDate) {
       return;
     }
 
     try {
-      await this.data.addOrder({ customerName, phone, description, deliveryDate, notes });
+      await this.data.addOrder({
+        customerName,
+        phone,
+        productId: product.id,
+        description: product.name,
+        deliveryDate,
+        notes,
+      });
     } catch {
       return;
     }
     this.orderForm = {
       customerName: '',
       phone: '',
-      description: '',
+      productId: '',
       deliveryDate: this.today,
       notes: '',
     };
+  }
+
+  async toggleOrderPaid(order: Order): Promise<void> {
+    if (!order.id) {
+      return;
+    }
+
+    try {
+      await this.data.toggleOrderPaid(order.id);
+    } catch {
+      return;
+    }
   }
 
   formatDate(date: string): string {
