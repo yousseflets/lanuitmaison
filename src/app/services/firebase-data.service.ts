@@ -15,6 +15,7 @@ import {
   Firestore,
   getDocs,
   getFirestore,
+  runTransaction,
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
@@ -49,6 +50,7 @@ export interface Sale {
   unitPrice: number;
   profit: number;
   date: string;
+  createdAt?: string;
 }
 
 export interface ShopeeProduct {
@@ -393,7 +395,8 @@ export class FirebaseDataService {
       quantity,
       unitPrice,
       profit,
-      date: new Date().toISOString(),
+      date: sale.date,
+      createdAt: new Date().toISOString(),
     };
 
     if (!this.db) {
@@ -511,22 +514,81 @@ export class FirebaseDataService {
   }
 
   async markOrderDelivered(orderId: string): Promise<void> {
-    if (!this.db) {
-      this.orders.update((currentOrders) =>
-        currentOrders.map((order) => (order.id === orderId ? { ...order, delivered: true } : order)),
-      );
+    const order = this.orders().find((currentOrder) => currentOrder.id === orderId);
+    if (!order) {
+      throw new Error('Encomenda não encontrada.');
+    }
+
+    if (order.delivered) {
       return;
     }
 
-    try {
-      await updateDoc(doc(this.db, 'orders', orderId), { delivered: true });
-    } catch (error) {
-      this.reportWriteError('atualizar entrega', error);
+    if (!order.productId) {
+      throw new Error('Esta encomenda não está vinculada a um produto do estoque.');
+    }
+
+    let updatedStock: number | null = null;
+    let updatedProductId = order.productId;
+    const db = this.db;
+    if (!db) {
+      const product = this.products().find((currentProduct) => currentProduct.id === order.productId);
+      if (!product) {
+        throw new Error('O produto desta encomenda não foi encontrado no estoque.');
+      }
+      updatedStock = Math.max(product.stock - 1, 0);
+    } else {
+      try {
+        await runTransaction(db, async (transaction) => {
+          const orderReference = doc(db, 'orders', orderId);
+          const orderSnapshot = await transaction.get(orderReference);
+          if (!orderSnapshot.exists()) {
+            throw new Error('Encomenda não encontrada.');
+          }
+
+          const currentOrder = orderSnapshot.data() as Order;
+          if (currentOrder.delivered) {
+            return;
+          }
+
+          if (!currentOrder.productId) {
+            throw new Error('Esta encomenda não está vinculada a um produto do estoque.');
+          }
+
+          const productReference = doc(db, 'products', currentOrder.productId);
+          const productSnapshot = await transaction.get(productReference);
+          if (!productSnapshot.exists()) {
+            throw new Error('O produto desta encomenda não foi encontrado no estoque.');
+          }
+
+          const nextStock = Math.max((Number(productSnapshot.data()['stock']) || 0) - 1, 0);
+          updatedProductId = currentOrder.productId;
+          updatedStock = nextStock;
+          transaction.update(productReference, { stock: nextStock });
+          transaction.update(orderReference, { delivered: true });
+        });
+      } catch (error) {
+        if (error instanceof Error && [
+          'Encomenda não encontrada.',
+          'Esta encomenda não está vinculada a um produto do estoque.',
+          'O produto desta encomenda não foi encontrado no estoque.',
+        ].includes(error.message)) {
+          throw error;
+        }
+        this.reportWriteError('atualizar entrega e estoque da encomenda', error);
+      }
     }
 
     this.orders.update((currentOrders) =>
       currentOrders.map((order) => (order.id === orderId ? { ...order, delivered: true } : order)),
     );
+    if (updatedStock !== null) {
+      const stock = updatedStock;
+      this.products.update((currentProducts) =>
+        currentProducts.map((product) =>
+          product.id === updatedProductId ? { ...product, stock } : product,
+        ),
+      );
+    }
   }
 
   async toggleOrderPaid(orderId: string): Promise<void> {

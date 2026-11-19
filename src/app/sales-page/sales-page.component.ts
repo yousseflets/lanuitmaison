@@ -16,6 +16,7 @@ export class SalesPageComponent {
   readonly products = signal<Product[]>([]);
   readonly sales = signal<Sale[]>([]);
   readonly userEmail = getStoredUserEmail();
+  readonly today = this.toDateInputValue(new Date());
 
   readonly totalRevenue = computed(() =>
     this.sales().reduce((total, sale) => total + sale.quantity * sale.unitPrice, 0),
@@ -25,10 +26,28 @@ export class SalesPageComponent {
     this.sales().reduce((total, sale) => total + sale.profit, 0),
   );
 
+  readonly dailySales = computed(() => {
+    const today = this.toDateInputValue(new Date());
+    return this.sales().filter((sale) => {
+      const timestamp = this.saleDateTimestamp(sale);
+      return timestamp !== null && this.toDateInputValue(new Date(timestamp)) === today;
+    });
+  });
+
+  readonly latestSales = computed(() =>
+    [...this.sales()]
+      .sort(
+        (left, right) =>
+          (this.saleDateTimestamp(right) ?? 0) - (this.saleDateTimestamp(left) ?? 0),
+      )
+      .slice(0, 10),
+  );
+
   saleForm = {
     productId: '',
     quantity: 1,
     unitPrice: 0,
+    date: this.today,
   };
 
   readonly currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -72,6 +91,11 @@ export class SalesPageComponent {
     this.saleForm.unitPrice = Number(normalized) || 0;
   }
 
+  formatSaleDate(sale: Sale): string {
+    const timestamp = this.saleDateTimestamp(sale);
+    return timestamp === null ? '—' : new Date(timestamp).toLocaleDateString('pt-BR');
+  }
+
   async logout(): Promise<void> {
     try {
       await this.data.signOut();
@@ -83,7 +107,7 @@ export class SalesPageComponent {
   }
 
   async addSale(): Promise<void> {
-    if (!this.saleForm.productId) {
+    if (!this.saleForm.productId || !this.saleForm.date) {
       return;
     }
 
@@ -106,7 +130,7 @@ export class SalesPageComponent {
         productName: selectedProduct.name,
         quantity,
         unitPrice,
-        date: new Date().toISOString(),
+        date: new Date(`${this.saleForm.date}T00:00:00`).toISOString(),
       });
     } catch {
       return;
@@ -116,6 +140,24 @@ export class SalesPageComponent {
       productId: '',
       quantity: 1,
       unitPrice: 0,
+      date: this.toDateInputValue(new Date()),
     };
+  }
+
+  private toDateInputValue(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private saleDateTimestamp(sale: Sale): number | null {
+    const date = sale.date || sale.createdAt;
+    if (!date) {
+      return null;
+    }
+
+    const timestamp = new Date(date).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
   }
 }

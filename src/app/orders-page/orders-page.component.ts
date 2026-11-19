@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, Signal } from '@angular/core';
+import { Component, computed, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FirebaseDataService, Order, Product } from '../services/firebase-data.service';
@@ -16,9 +16,14 @@ export class OrdersPageComponent {
   readonly orders: Signal<Order[]>;
   readonly products: Signal<Product[]>;
   readonly userEmail = getStoredUserEmail();
+  readonly orderedOrders = computed(() =>
+    [...this.orders()].sort((left, right) => Number(left.delivered) - Number(right.delivered)),
+  );
   readonly pendingCount = computed(() => this.orders().filter((order) => !order.delivered).length);
   readonly deliveredCount = computed(() => this.orders().filter((order) => order.delivered).length);
   readonly today = this.toDateInputValue(new Date());
+  readonly deliveringOrderId = signal<string | null>(null);
+  readonly deliveryError = signal<string | null>(null);
 
   orderForm = {
     customerName: '',
@@ -73,6 +78,26 @@ export class OrdersPageComponent {
       await this.data.toggleOrderPaid(order.id);
     } catch {
       return;
+    }
+  }
+
+  async markDelivered(order: Order): Promise<void> {
+    if (!order.id || order.delivered || this.deliveringOrderId()) {
+      return;
+    }
+
+    this.deliveringOrderId.set(order.id);
+    this.deliveryError.set(null);
+    try {
+      await this.data.markOrderDelivered(order.id);
+    } catch (error) {
+      this.deliveryError.set(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível registrar a entrega. Verifique a conexão e tente novamente.',
+      );
+    } finally {
+      this.deliveringOrderId.set(null);
     }
   }
 

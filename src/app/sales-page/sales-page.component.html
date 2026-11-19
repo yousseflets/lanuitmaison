@@ -71,6 +71,11 @@
             </select>
           </label>
 
+          <label>
+            <span>Data da venda</span>
+            <input type="date" [(ngModel)]="saleForm.date" name="sale-date" required />
+          </label>
+
           <div class="two-columns">
             <label>
               <span>Quantidade</span>
@@ -95,21 +100,61 @@
       </article>
 
       <article class="panel list-panel">
-        <h2>Últimas vendas</h2>
-        <div class="sales-list" *ngIf="sales().length; else emptySales">
-          <div class="sale-row" *ngFor="let sale of sales()">
-            <div>
-              <strong>{{ sale.productName }}</strong>
-              <span>{{ sale.quantity }} unidades</span>
-            </div>
-            <div class="sale-meta">
-              <b>{{ currencyFormatter.format(sale.unitPrice * sale.quantity) }}</b>
-              <small>{{ currencyFormatter.format(sale.profit) }} lucro</small>
-            </div>
-          </div>
+        <h2>Vendas do dia</h2>
+        <div class="sales-table-wrapper" *ngIf="dailySales().length; else emptySales">
+          <table class="sales-table">
+            <thead>
+              <tr>
+                <th scope="col">Produto</th>
+                <th scope="col">Quantidade</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Lucro</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sale of dailySales()">
+                <td>{{ sale.productName }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>{{ currencyFormatter.format(sale.unitPrice * sale.quantity) }}</td>
+                <td>{{ currencyFormatter.format(sale.profit) }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <ng-template #emptySales>
+          <p class="empty-state">Nenhuma venda registrada hoje.</p>
+        </ng-template>
+      </article>
+
+      <div class="section-divider" aria-hidden="true"></div>
+
+      <article class="panel list-panel latest-sales-panel">
+        <h2>Últimas vendas</h2>
+        <div class="sales-table-wrapper" *ngIf="latestSales().length; else emptyLatestSales">
+          <table class="sales-table">
+            <thead>
+              <tr>
+                <th scope="col">Produto</th>
+                <th scope="col">Data</th>
+                <th scope="col">Quantidade</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Lucro</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sale of latestSales()">
+                <td>{{ sale.productName }}</td>
+                <td>{{ formatSaleDate(sale) }}</td>
+                <td>{{ sale.quantity }}</td>
+                <td>{{ currencyFormatter.format(sale.unitPrice * sale.quantity) }}</td>
+                <td>{{ currencyFormatter.format(sale.profit) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #emptyLatestSales>
           <p class="empty-state">Nenhuma venda registrada.</p>
         </ng-template>
       </article>
